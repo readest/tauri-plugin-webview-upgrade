@@ -94,7 +94,14 @@ class WebViewUpgradeInitializer : Initializer<Unit> {
         // the first Activity that comes to the foreground.
         // "Not installed" (-1) is treated as "below threshold" — the user
         // can't render from it.
+        //
+        // Short-circuit: if the system's *currently active* WebView provider
+        // already meets MIN_SUPPORTED_MAJOR (covers vendor providers such as
+        // com.huawei.webview that aren't in UPGRADE_CANDIDATES), suppress the
+        // notice — rendering will work, even if we couldn't swap to a Google
+        // WebView candidate.
         if (!upgradedSuccessfully &&
+            systemMajor < WebViewUpgradeConfig.MIN_SUPPORTED_MAJOR &&
             androidWebViewMajor < WebViewUpgradeConfig.MIN_SUPPORTED_MAJOR &&
             upgradeCandidates.all { (_, major) -> major < WebViewUpgradeConfig.MIN_SUPPORTED_MAJOR }
         ) {
