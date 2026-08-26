@@ -104,7 +104,7 @@ On Android, at process attach:
 6. If **none** of `com.android.webview`, `com.google.android.webview`,
    `com.google.android.webview.beta`, `com.google.android.webview.dev`, or
    `com.google.android.webview.canary` has a major **≥ `minSupportedMajor`**
-   (default `92`) and no upgrade was performed, register a one-shot
+   (default `111`) and no upgrade was performed, register a one-shot
    `ActivityLifecycleCallbacks` that shows a modal `AlertDialog` on the
    first Activity resume nudging the user to install Android System WebView.
    The dialog doesn't auto-dismiss — the user has to tap OK to acknowledge.
@@ -136,7 +136,7 @@ Both Chromium-major thresholds are configurable via the host app's
   "plugins": {
     "webview-upgrade": {
       "minUpgradeMajor": 121,
-      "minSupportedMajor": 92
+      "minSupportedMajor": 111
     }
   }
 }
@@ -145,7 +145,7 @@ Both Chromium-major thresholds are configurable via the host app's
 | Key                 | Default | Meaning                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | ------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `minUpgradeMajor`   | `121`   | If the system WebView's Chromium major is below this, the plugin will try to swap to `com.google.android.webview` (or its `.beta` / `.dev` / `.canary` channels as fallbacks) when one of those packages is installed at major ≥ this same threshold. Bump it when your app starts depending on newer web features.                                                                                                                           |
-| `minSupportedMajor` | `92`    | If `com.android.webview`, `com.google.android.webview`, and the `.beta` / `.dev` / `.canary` Google WebView channels are **all** below this major (or not installed), and no upgrade was performed, the plugin shows a modal `AlertDialog` on first Activity resume telling the user their WebView is too old. Pick a value that maps to "modern enough to render most of the open web" — i.e. below this the app is effectively unsupported. |
+| `minSupportedMajor` | `111`   | If `com.android.webview`, `com.google.android.webview`, and the `.beta` / `.dev` / `.canary` Google WebView channels are **all** below this major (or not installed), and no upgrade was performed, the plugin shows a modal `AlertDialog` on first Activity resume telling the user their WebView is too old. Pick a value that maps to "modern enough to render most of the open web" — i.e. below this the app is effectively unsupported. |
 
 ### How it reaches Kotlin
 
@@ -164,7 +164,7 @@ falls back to the defaults above. The generation log line prints which
 source was used:
 
 ```
-WebViewUpgradeConfig: minUpgradeMajor=121, minSupportedMajor=92 (from tauri.conf.json at /…/src-tauri/tauri.conf.json)
+WebViewUpgradeConfig: minUpgradeMajor=121, minSupportedMajor=111 (from tauri.conf.json at /…/src-tauri/tauri.conf.json)
 ```
 
 ## Caveats

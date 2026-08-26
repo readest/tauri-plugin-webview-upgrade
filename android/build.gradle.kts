@@ -66,7 +66,7 @@ dependencies {
 // the config was extracted.
 
 val defaultMinUpgradeMajor = 121
-val defaultMinSupportedMajor = 92
+val defaultMinSupportedMajor = 111
 
 @Suppress("UNCHECKED_CAST")
 fun readPluginConfigFromJson(jsonText: String?): Pair<Int, Int> {
