@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="webview_upgrade_outdated_message">Android System WebView устарел. Обновите или установите его, чтобы это приложение отображалось правильно.</string>
+    <string name="webview_upgrade_download_message">APK WebView можно скачать с %1$s или %2$s.</string>
 </resources>
