@@ -108,6 +108,9 @@ On Android, at process attach:
    `ActivityLifecycleCallbacks` that shows a modal `AlertDialog` on the
    first Activity resume nudging the user to install Android System WebView.
    The dialog doesn't auto-dismiss — the user has to tap OK to acknowledge.
+   It ends with hyperlinks to the monolithic WebView builds on
+   [APKMirror](https://www.apkmirror.com/apk/google-inc/android-system-webview/)
+   and, as a backup, [Uptodown](https://android-system-webview.en.uptodown.com/android).
    Dialog text is loaded from the plugin's bundled string resources, so the
    user's system locale picks the right translation. "Not installed" counts
    as below threshold.

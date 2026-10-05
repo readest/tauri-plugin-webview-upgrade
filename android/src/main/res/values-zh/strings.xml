@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="webview_upgrade_outdated_message">Android System WebView 版本过旧，请更新或安装该组件以确保此应用正常显示。</string>
+    <string name="webview_upgrade_download_message">你可以从 %1$s 或 %2$s 下载 WebView APK。</string>
 </resources>

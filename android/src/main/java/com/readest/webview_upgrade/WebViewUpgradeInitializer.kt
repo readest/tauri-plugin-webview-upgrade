@@ -4,12 +4,20 @@ import android.app.ActivityManager
 import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageInfo
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.util.Log
+import android.view.View
 import android.webkit.WebView
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.startup.Initializer
 import com.norman.webviewup.lib.WebViewUpgrade
@@ -189,10 +197,38 @@ class WebViewUpgradeInitializer : Initializer<Unit> {
                 if (activity.isFinishing || activity.isDestroyed) return
                 shown = true
                 app.unregisterActivityLifecycleCallbacks(this)
-                AlertDialog.Builder(activity)
-                    .setMessage(message)
+                // Append download hyperlinks (Play Store's WebView is a split
+                // bundle WebViewUpgrade can't load, so point at monolithic
+                // builds; Uptodown is the backup mirror). Many e-ink ROMs ship
+                // without a browser, so taps are guarded.
+                val download = app.getString(
+                    R.string.webview_upgrade_download_message,
+                    *WEBVIEW_DOWNLOAD_LINKS.map { it.first }.toTypedArray()
+                )
+                val text = SpannableString("$message\n\n$download")
+                for ((label, url) in WEBVIEW_DOWNLOAD_LINKS) {
+                    val start = text.indexOf(label, message.length)
+                    text.setSpan(
+                        object : ClickableSpan() {
+                            override fun onClick(widget: View) {
+                                try {
+                                    activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                } catch (t: Throwable) {
+                                    Log.w(TAG, "Cannot open $url", t)
+                                }
+                            }
+                        },
+                        start,
+                        start + label.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+                val dialog = AlertDialog.Builder(activity)
+                    .setMessage(text)
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
+                dialog.findViewById<TextView>(android.R.id.message)?.movementMethod =
+                    LinkMovementMethod.getInstance()
             }
 
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
@@ -262,6 +298,10 @@ class WebViewUpgradeInitializer : Initializer<Unit> {
 
     companion object {
         private const val TAG = "WebViewUpgrade"
+        private val WEBVIEW_DOWNLOAD_LINKS = listOf(
+            "APKMirror" to "https://www.apkmirror.com/apk/google-inc/android-system-webview/",
+            "Uptodown" to "https://android-system-webview.en.uptodown.com/android",
+        )
 
         private const val GOOGLE_WEBVIEW_PKG = "com.google.android.webview"
         private const val GOOGLE_WEBVIEW_BETA_PKG = "com.google.android.webview.beta"
