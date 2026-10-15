@@ -32,6 +32,9 @@
             <meta-data
                 android:name="com.readest.webview_upgrade.WebViewUpgradeInitializer"
                 android:value="androidx.startup" />
+            <meta-data
+                android:name="com.readest.webview_upgrade.EinkNightModeInitializer"
+                android:value="androidx.startup" />
         </provider>
     </application>
 </manifest>

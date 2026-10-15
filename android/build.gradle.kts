@@ -48,6 +48,7 @@ dependencies {
     // window in which WebViewUpgrade is allowed to swap the WebView provider.
     implementation("androidx.startup:startup-runtime:1.2.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
+    testImplementation("junit:junit:4.13.2")
     implementation(project(":tauri-android"))
 }
 
