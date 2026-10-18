@@ -6,12 +6,17 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.drawable.InsetDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.TextPaint
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.util.Log
@@ -21,6 +26,10 @@ import android.webkit.WebView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.startup.Initializer
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.shape.CornerFamily
+import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.shape.ShapeAppearanceModel
 import com.norman.webviewup.lib.WebViewUpgrade
 import com.norman.webviewup.lib.source.UpgradePackageSource
 
@@ -218,28 +227,23 @@ class WebViewUpgradeInitializer : Initializer<Unit> {
                                     Log.w(TAG, "Cannot open $url", t)
                                 }
                             }
+
+                            override fun updateDrawState(ds: TextPaint) {
+                                super.updateDrawState(ds)
+                                // E-ink: pure black links (the Material
+                                // accent renders as a gray link on the panel).
+                                if (isEinkDevice()) {
+                                    ds.color = Color.BLACK
+                                    ds.isUnderlineText = true
+                                }
+                            }
                         },
                         start,
                         start + label.length,
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
                 }
-                val dialog = AlertDialog.Builder(activity)
-                    .setMessage(text)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-                // E-ink: DIM_BEHIND paints a large dark overlay over the whole
-                // page behind the dialog; the panel then has to repaint that
-                // big dark area, which on the Hanvon Clear7 shows up as the
-                // background going dark for seconds after a heavy refresh.
-                // Drop the dim entirely — the dialog content is already
-                // pinned light by EinkNightModeInitializer.
-                if (isEinkDevice()) {
-                    dialog.window?.setDimAmount(0f)
-                    dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-                }
-                dialog.findViewById<TextView>(android.R.id.message)?.movementMethod =
-                    LinkMovementMethod.getInstance()
+                showOutdatedDialog(activity, text)
             }
 
             override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
@@ -249,6 +253,76 @@ class WebViewUpgradeInitializer : Initializer<Unit> {
             override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
             override fun onActivityDestroyed(activity: Activity) = Unit
         })
+    }
+
+    // E-ink dialog chrome on the stock AlertDialog: the App already uses
+    // Theme.MaterialComponents, so this dialog's fonts/layout/button are the
+    // original Material design. Keep that component and change only the
+    // chrome - repaint the window background as white with a black stroke
+    // (no elevation/shadow, stock padding preserved via InsetDrawable) and
+    // give the MaterialButton its own black stroke. E-ink only; other
+    // platforms keep the dialog untouched.
+    private fun showOutdatedDialog(activity: Activity, text: SpannableString) {
+        val eink = isEinkDevice()
+        val density = activity.resources.displayMetrics.density
+        val stroke = (1f * density).toInt().coerceAtLeast(1)
+        // Match the app's dialog tokens (themes.ts: --radius-box 1rem for
+        // panels, --radius-field 0.5rem for buttons; CSS px ≈ dp here) so
+        // the native dialog reads like every web dialog on the same panel.
+        val radius = 16f * density
+        val buttonRadius = 8f * density
+        // Create first so the e-ink window attributes can be pinned BEFORE
+        // show(): the window is added with whatever dim its attributes carry,
+        // so clearing the dim only after show() briefly displays the stock
+        // dim veil - on e-ink that is a real drawn frame that later
+        // refreshes ghost.
+        val dialog = AlertDialog.Builder(activity)
+            .setMessage(text)
+            .setPositiveButton(android.R.string.ok, null)
+            .create()
+        if (eink) {
+            dialog.window?.setDimAmount(0f)
+            dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+        }
+        dialog.show()
+        if (eink) {
+            val panel = MaterialShapeDrawable(
+                ShapeAppearanceModel.builder()
+                    .setAllCorners(CornerFamily.ROUNDED, radius)
+                    .build(),
+            ).apply {
+                fillColor = ColorStateList.valueOf(Color.WHITE)
+                strokeWidth = stroke.toFloat()
+                strokeColor = ColorStateList.valueOf(Color.BLACK)
+                elevation = 0f
+            }
+            val pad = Rect()
+            dialog.window?.decorView?.background?.getPadding(pad)
+            val background = if (pad.left != 0 || pad.top != 0 || pad.right != 0 || pad.bottom != 0) {
+                InsetDrawable(panel, pad.left, pad.top, pad.right, pad.bottom)
+            } else {
+                panel
+            }
+            dialog.window?.setBackgroundDrawable(background)
+            dialog.findViewById<TextView>(android.R.id.message)?.setTextColor(Color.BLACK)
+            (dialog.getButton(AlertDialog.BUTTON_POSITIVE) as? MaterialButton)?.let { button ->
+                button.setTextColor(Color.BLACK)
+                button.setBackgroundColor(Color.WHITE)
+                button.strokeWidth = stroke
+                button.strokeColor = ColorStateList.valueOf(Color.BLACK)
+                button.cornerRadius = buttonRadius.toInt()
+            }
+            // The dialog's outline shadow must be killed AFTER show():
+            // generateLayout re-applies the theme-resolved elevation (16dp)
+            // while showing, clobbering any pre-show value, and RenderThread
+            // then draws the decor's shadow into the ~66px surface insets
+            // around the panel - a gray gradient e-ink renders as a dirty
+            // halo. window.setElevation reaches the live decor directly once
+            // it exists, so zeroing here wins.
+            dialog.window?.setElevation(0f)
+        }
+        dialog.findViewById<TextView>(android.R.id.message)?.movementMethod =
+            LinkMovementMethod.getInstance()
     }
 
     private fun describeInstalled(context: Context, pkg: String) {

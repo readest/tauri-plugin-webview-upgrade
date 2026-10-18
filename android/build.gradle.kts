@@ -48,6 +48,10 @@ dependencies {
     // window in which WebViewUpgrade is allowed to swap the WebView provider.
     implementation("androidx.startup:startup-runtime:1.2.0")
     implementation("androidx.appcompat:appcompat:1.7.1")
+    // The e-ink dialog chrome uses Material components the host app already
+    // ships (MaterialShapeDrawable panel / MaterialButton stroke); this
+    // module needs them on its own classpath.
+    implementation("com.google.android.material:material:1.12.0")
     testImplementation("junit:junit:4.13.2")
     implementation(project(":tauri-android"))
 }
