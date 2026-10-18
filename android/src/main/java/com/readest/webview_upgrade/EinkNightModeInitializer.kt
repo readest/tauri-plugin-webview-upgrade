@@ -34,34 +34,6 @@ class EinkNightModeInitializer : Initializer<Unit> {
     // src-tauri/src/android/eink.rs) via the EinkIdentity table above —
     // same properties, same semantics, so both sides agree on the device
     // class.
-    private fun isEinkDevice(): Boolean {
-        cachedIsEink?.let { return it }
-        val manufacturer = (readSystemProperty("ro.product.manufacturer") ?: Build.MANUFACTURER)
-            .lowercase()
-        val brand = (readSystemProperty("ro.product.brand") ?: Build.BRAND).lowercase()
-        val model = (readSystemProperty("ro.product.model") ?: Build.MODEL).lowercase()
-        val device = (readSystemProperty("ro.product.device") ?: Build.DEVICE).lowercase()
-        val isEink = isEinkIdentity(manufacturer, brand, model, device) ||
-            // Boolean-style flag.
-            readSystemProperty("ro.eink.support")?.let {
-                it == "1" || it.lowercase() == "true"
-            } == true ||
-            // BOOX reports a free-form device name (e.g. "Note Air");
-            // presence is the signal, like Rust's get_system_property(...).is_some().
-            readSystemProperty("ro.onyx.devicename") != null
-        cachedIsEink = isEink
-        return isEink
-    }
-
-    private fun readSystemProperty(prop: String): String? = try {
-        val get = Class
-            .forName("android.os.SystemProperties")
-            .getMethod("get", String::class.java)
-        (get.invoke(null, prop) as? String)?.takeIf { it.isNotEmpty() }
-    } catch (e: Exception) {
-        null
-    }
-
     // App Startup invokes Initializers in the main process only when they're
     // declared under InitializationProvider, but the host may also pull
     // androidx.startup into sandboxed child processes transitively. Guarding
@@ -77,8 +49,38 @@ class EinkNightModeInitializer : Initializer<Unit> {
         val processes = am.runningAppProcesses ?: return true
         return processes.firstOrNull { it.pid == pid }?.processName == expected
     }
+}
 
-    companion object {
-        private var cachedIsEink: Boolean? = null
-    }
+// Shared e-ink detection for this plugin. The night-mode pin above uses it,
+// and so does the outdated-WebView dialog (WebViewUpgradeInitializer drops
+// its dim layer on e-ink: DIM_BEHIND darkens the whole page and forces a
+// heavy panel full refresh). Cached for the process lifetime.
+internal fun isEinkDevice(): Boolean {
+    cachedIsEink?.let { return it }
+    val manufacturer = (readSystemProperty("ro.product.manufacturer") ?: Build.MANUFACTURER)
+        .lowercase()
+    val brand = (readSystemProperty("ro.product.brand") ?: Build.BRAND).lowercase()
+    val model = (readSystemProperty("ro.product.model") ?: Build.MODEL).lowercase()
+    val device = (readSystemProperty("ro.product.device") ?: Build.DEVICE).lowercase()
+    val isEink = isEinkIdentity(manufacturer, brand, model, device) ||
+        // Boolean-style flag.
+        readSystemProperty("ro.eink.support")?.let {
+            it == "1" || it.lowercase() == "true"
+        } == true ||
+        // BOOX reports a free-form device name (e.g. "Note Air");
+        // presence is the signal, like Rust's get_system_property(...).is_some().
+        readSystemProperty("ro.onyx.devicename") != null
+    cachedIsEink = isEink
+    return isEink
+}
+
+private var cachedIsEink: Boolean? = null
+
+private fun readSystemProperty(prop: String): String? = try {
+    val get = Class
+        .forName("android.os.SystemProperties")
+        .getMethod("get", String::class.java)
+    (get.invoke(null, prop) as? String)?.takeIf { it.isNotEmpty() }
+} catch (e: Exception) {
+    null
 }

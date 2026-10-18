@@ -16,6 +16,7 @@ import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -227,6 +228,16 @@ class WebViewUpgradeInitializer : Initializer<Unit> {
                     .setMessage(text)
                     .setPositiveButton(android.R.string.ok, null)
                     .show()
+                // E-ink: DIM_BEHIND paints a large dark overlay over the whole
+                // page behind the dialog; the panel then has to repaint that
+                // big dark area, which on the Hanvon Clear7 shows up as the
+                // background going dark for seconds after a heavy refresh.
+                // Drop the dim entirely — the dialog content is already
+                // pinned light by EinkNightModeInitializer.
+                if (isEinkDevice()) {
+                    dialog.window?.setDimAmount(0f)
+                    dialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                }
                 dialog.findViewById<TextView>(android.R.id.message)?.movementMethod =
                     LinkMovementMethod.getInstance()
             }
