@@ -2,4 +2,5 @@
 <resources>
     <string name="webview_upgrade_outdated_message">Android System WebView est obsolète. Veuillez le mettre à jour ou l\'installer pour que cette application s\'affiche correctement.</string>
     <string name="webview_upgrade_download_message">Vous pouvez télécharger l\'APK de WebView depuis %1$s ou %2$s.</string>
+    <string name="webview_upgrade_no_browser_toast">Aucun navigateur web n\'ayant été trouvé sur cet appareil, le lien de téléchargement a été copié dans le presse-papiers. Installez d\'abord un navigateur ou passez le lien manuellement à un autre appareil pour continuer.</string>
 </resources>

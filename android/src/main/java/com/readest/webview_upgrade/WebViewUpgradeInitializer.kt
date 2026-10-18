@@ -3,6 +3,9 @@ package com.readest.webview_upgrade
 import android.app.ActivityManager
 import android.app.Activity
 import android.app.Application
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
@@ -24,6 +27,7 @@ import android.view.View
 import android.view.WindowManager
 import android.webkit.WebView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.startup.Initializer
 import com.google.android.material.button.MaterialButton
@@ -223,6 +227,25 @@ class WebViewUpgradeInitializer : Initializer<Unit> {
                             override fun onClick(widget: View) {
                                 try {
                                     activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                } catch (e: ActivityNotFoundException) {
+                                    // Sealed ROMs (confirmed on an iReader A10:
+                                    // zero https handlers) ship without any
+                                    // browser, so the tap has nowhere to go.
+                                    // Land the address on the clipboard so it
+                                    // can be pasted once a browser is
+                                    // installed — including bundled app-store
+                                    // browsers — or sent to another device.
+                                    Log.w(TAG, "Cannot open $url", e)
+                                    val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE)
+                                        as? ClipboardManager
+                                    clipboard?.setPrimaryClip(
+                                        ClipData.newPlainText("webview-download-url", url)
+                                    )
+                                    Toast.makeText(
+                                        activity,
+                                        R.string.webview_upgrade_no_browser_toast,
+                                        Toast.LENGTH_LONG,
+                                    ).show()
                                 } catch (t: Throwable) {
                                     Log.w(TAG, "Cannot open $url", t)
                                 }
