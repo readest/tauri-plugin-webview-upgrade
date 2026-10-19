@@ -8,4 +8,5 @@
 <resources>
     <string name="webview_upgrade_outdated_message">Android System WebView Anda sudah usang. Perbarui atau pasang agar aplikasi ini ditampilkan dengan benar.</string>
     <string name="webview_upgrade_download_message">Anda dapat mengunduh APK WebView dari %1$s atau %2$s.</string>
+    <string name="webview_upgrade_no_browser_toast">Karena tidak ada peramban web di perangkat ini, tautan unduhan telah disalin ke papan klip. Pasang peramban terlebih dahulu atau kirim tautan secara manual ke perangkat lain untuk melanjutkan.</string>
 </resources>

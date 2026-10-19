@@ -7,4 +7,5 @@
 <resources>
     <string name="webview_upgrade_outdated_message">Android System WebView is outdated. Please update or install it for this app to display correctly.</string>
     <string name="webview_upgrade_download_message">You can download the WebView APK from %1$s or %2$s.</string>
+    <string name="webview_upgrade_no_browser_toast">As no web browser was found on this device, the download link has been copied to clipboard. Install a browser first or pass the link to another device manually to continue.</string>
 </resources>

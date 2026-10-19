@@ -2,4 +2,5 @@
 <resources>
     <string name="webview_upgrade_outdated_message">Android System WebView पुराना है। इस ऐप के सही प्रदर्शन के लिए कृपया इसे अपडेट या इंस्टॉल करें।</string>
     <string name="webview_upgrade_download_message">आप WebView APK को %1$s या %2$s से डाउनलोड कर सकते हैं।</string>
+    <string name="webview_upgrade_no_browser_toast">इस डिवाइस पर कोई वेब ब्राउज़र नहीं मिला, इसलिए डाउनलोड लिंक क्लिपबोर्ड पर कॉपी कर लिया गया है। पहले कोई ब्राउज़र इंस्टॉल करें या आगे बढ़ने के लिए लिंक को किसी दूसरे डिवाइस पर मैन्युअल रूप से भेजें।</string>
 </resources>

@@ -2,4 +2,5 @@
 <resources>
     <string name="webview_upgrade_outdated_message">Android System WebView está desactualizado. Actualízalo o instálalo para que esta aplicación se muestre correctamente.</string>
     <string name="webview_upgrade_download_message">Puedes descargar el APK de WebView desde %1$s o %2$s.</string>
+    <string name="webview_upgrade_no_browser_toast">Como no se encontró ningún navegador web en este dispositivo, el enlace de descarga se ha copiado al portapapeles. Instala primero un navegador o pasa el enlace manualmente a otro dispositivo para continuar.</string>
 </resources>
